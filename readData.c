@@ -9,7 +9,6 @@ typedef struct urlNode *URL;
 
 struct urlNode{
 	char *url; 	//hold the string value of URL
-	int index;	//hold the index it will contain in the array
 	URL next; 	//pointer to next node
 };
 
@@ -20,10 +19,12 @@ struct URLList {
 };
 
 List newList();
-void newURLNode(List l, char *val, int index);
+void newURLNode(List l, char *);
 void linkNodes(list l, URL u);
 void releaseNode(URL u);
 void disposeList(list l);
+int nElems(list);
+
 
 static void readData()
 
@@ -38,12 +39,11 @@ List newList(){
 	return new;
 }	
 
-void newURLNode(List l, char *val, int index){
+void newURLNode(List l, char *val){
 
 	URL new = malloc(sizeof(struct urlNode));
 	assert(new != NULL);
 	new->url = strdup(val);
-	new->index = index;
 	new->next = NULL;
 	l->nitems++;
 	linkNodes(l, new);
@@ -64,11 +64,14 @@ static void readData(list l){
 	
 	FILE *fp = fopen("collection.txt", "r");
 	char *input;
-	int i = 0;
-	while(fscanf(fp, "s", input) != EOF) {
-		newURLNode(new, input, index);
-		i++;
+	while(fscanf(fp, "%s", input) != EOF) {
+		newURLNode(l, input);
 	}
+}
+
+int nElems(list l) {
+	assert(l != NULL)
+	return l->nitems;
 }
 
 void disposeList(list l){
