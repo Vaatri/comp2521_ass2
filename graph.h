@@ -8,5 +8,6 @@ void disposeGraph(Graph g);								//free memory occupied by graph
 int addEdge(Graph g, char *src, char *dest);			//add an edge between src and dest
 int isConnected(Graph g, char *src, char *dest);
 int nVertices(Graph g);
+void showGraph(Graph, int mode);
 
 #endif

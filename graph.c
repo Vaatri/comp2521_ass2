@@ -22,6 +22,7 @@ void disposeGraph(Graph g);								//free memory occupied by graph
 int addEdge(Graph g, char *src, char *dest);			//add an edge between src and dest
 int isConnected(Graph g, char *src, char *dest);		//check if src and dest is connected
 int nVertices(Graph g);									//return number of verticies
+void showGraph(Graph, int mode);						//show the graph
 static int addVertex(char *str, char **urls, int N);	//add str into URL array at index n
 static int findVertex(char *str, char **urls, int N);	//check if str is in url Array
 
@@ -40,7 +41,7 @@ Graph newGraph(int size){
 		new->urlVertex[i] = NULL;
 		new->edges[i] = malloc(size * sizeof(Num));
 		assert(new->edges[i] != NULL);
-		for (j = 0; j < maxV; j++)
+		for (j = 0; j < new->maxV; j++)
 			new->edges[i][j] = 0;
 	}
 
@@ -67,7 +68,7 @@ int addEdge(Graph g, char *src, char *dest) {
 	assert(g != NULL);
 	int v = findVertex(src, g->urlVertex, g->nV);
 	if (v < 0) {
-		if (g->nV > = g->maxV) return 0;
+		if (g->nV >= g->maxV) return 0;
 		v = addVertex(src, g->urlVertex, g->nV);
 		g->nV++;
 	}
@@ -97,12 +98,39 @@ int nVertices(Graph g) {
 	return (g->nV);
 }
 
+void showGraph(Graph g, int mode) {
+	assert(g != NULL);
+	if (g->nV == 0)
+		printf("Graph is empty\n");
+	else {
+		printf("Graph has %d vertices:\n",g->nV);
+		int i, j;
+		if (mode == 1) {
+			for (i = 0; i < g->nV; i++) {
+				for (j = 0; j < g->nV; j++)
+					printf("%d",g->edges[i][j]);
+				putchar('\n');
+			}
+		}
+		else {
+			for (i = 0; i < g->nV; i++) {
+				printf("Vertex: %s\n", g->urlVertex[i]);
+				printf("connects to\n");
+				for (j = 0; j < g->nV; j++) {
+					if (g->edges[i][j])
+						printf("   %s\n",g->urlVertex[j]);
+				}
+			}
+		}
+	}
+}
+
 //searches str in string array
 //returns index of str or -1 depending on found or not
 static int findVertex(char *str, char **urls, int N){
 	int i;
 	for (i = 0; i < N; i++)
-		if (strEQ(str, names[i])) return i;
+		if (strEQ(str, urls[i])) return i;
 	return -1;
 }
 

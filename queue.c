@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string.h>
+#include <assert.h>
 #include "queue.h"
 
 typedef struct Node *Link;
@@ -9,7 +10,8 @@ typedef struct Node *Link;
 //Struct to contain the individual nodes
 //and to contain the URL Data.
 typedef struct Node { 
-	char *val; 		//contain URL Value
+	char *url; 		//contain URL urlue
+	// char *message;  //containing the contents within section 2
 	Link next;		//pointer to the next node in the list.
 } Node;
 
@@ -28,7 +30,7 @@ int emptyQueue(Queue);
 void showQueue(Queue q);
 
 static Link newNode(char *);
-static void disposeNode(link);
+static void disposeNode(Link l);
 
 //Create an empty Queue
 Queue newQueue() {
@@ -60,7 +62,7 @@ void enterQueue(Queue q, char *str){
 		q->head = q->tail = new;
 	else {
 		q->tail->next = new;
-		q-.tail = new;
+		q->tail = new;
 	}
 }
 
@@ -68,10 +70,10 @@ void enterQueue(Queue q, char *str){
 char *leaveQueue(Queue q){
 
 	assert(q->head != NULL);
-	char *str = q->head->val;
+	char *str = q->head->url;
 	Link old = q->head;
 	q->head = old->next;
-	if (q->head == NULL) q->back = NULL;
+	if (q->head == NULL) q->tail = NULL;
 	free(old);
 	return str;
 }
@@ -88,7 +90,7 @@ void showQueue(Queue q) {
 		printf("Queue (head to tail:\n");
 		curr = q->head;
 		while (curr != NULL) {
-			printf("%s\n", curr->val);
+			printf("%s\n", curr->url);
 			curr = curr->next;
 		}
 	}
@@ -97,13 +99,13 @@ void showQueue(Queue q) {
 static Link newNode(char *str) {
 	Link new = malloc(sizeof(Node));
 	assert(new != NULL);
-	new->val = strdup(str);
+	new->url = strdup(str);
 	new->next = NULL;
 	return new;
 }
 
 static void disposeNode(Link curr){
 	assert(curr != NULL);
-	free(curr->val);
+	free(curr->url);
 	free(curr);
 }
