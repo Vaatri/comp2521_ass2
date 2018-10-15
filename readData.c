@@ -5,7 +5,6 @@
 #include <string.h>
 #include "readData.h"
 
-typedef struct urlNode *URL;
 
 struct urlNode{
 	char *url; 	//hold the string value of URL
@@ -18,15 +17,22 @@ struct URLList {
 	URL curr;	//after linking nodes, this will point to the last.
 };
 
-List newList();
-void newURLNode(List l, char *);
-void linkNodes(list l, URL u);
-void releaseNode(URL u);
-void disposeList(list l);
-int nElems(list);
+List newList();							//create empty linked list
+void newURLNode(List l, char *);		//create node with given str
+void linkNodes(List l, URL);			//link node in List
+void releaseNode(List l, URL);				//free occupied memory of node
+void disposeList(List l);				//free occupied memory of list
+int nElems(List l);						//return size of list
 
 
-static void readData()
+static void readData(List);
+static void printlist(List);
+
+int main(){
+
+	List l = newList();
+	return 0;
+}
 
 
 List newList(){
@@ -50,7 +56,7 @@ void newURLNode(List l, char *val){
 
 }
 
-void linkNodes(list l, URL u){
+void linkNodes(List l, URL u){
 
 	if (l->head == NULL) {
 		l->head = l->curr = u;
@@ -60,35 +66,38 @@ void linkNodes(list l, URL u){
 	}
 }
 
-static void readData(list l){
+static void readData(List l){
 	
 	FILE *fp = fopen("collection.txt", "r");
-	char *input;
+	assert(fp != NULL);
+	printf("hello\n");
+	char *input = malloc(8);
 	while(fscanf(fp, "%s", input) != EOF) {
 		newURLNode(l, input);
 	}
+	printlist(l);
 }
 
-int nElems(list l) {
-	assert(l != NULL)
+int nElems(List l) {
+	assert(l != NULL);
 	return l->nitems;
 }
 
-void disposeList(list l){
+void disposeList(List l){
 	URL curr = l->head;
 
 	//free nodes in the list.
 	while(curr->next != NULL) {
 		URL temp = curr->next;
-		releaseNode(curr);
+		releaseNode(l, curr);
 		curr = temp;
 		curr = curr->next;
 	}
-	releaseNode(curr);
+	releaseNode(l, curr);
 	free(l);
 
 }	
-void releaseNode(URL u) {
+void releaseNode(List l, URL u) {
 	if (u->next == NULL) {
 		free(u->url);
 		free(u);
@@ -99,4 +108,15 @@ void releaseNode(URL u) {
 		free(u);
 	}
 
+}
+
+
+//debug functions
+
+static void printlist(List l){
+	URL curr = l->head;
+	while(curr != NULL){
+		printf("curr = %s\n", curr->url);
+		curr = curr->next;
+	}
 }
