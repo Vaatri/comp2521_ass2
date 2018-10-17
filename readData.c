@@ -6,6 +6,7 @@
 #include "readData.h"
 #include "graph.h"
 #include "queue.h"
+#include "pagerank.h"
 
 #define strEQ(s,t) (strcmp((s), (t)) == 0)
 
@@ -27,15 +28,29 @@ void linkNodes(List l, URL);			//link node in List
 void releaseNode(List l, URL);				//free occupied memory of node
 void disposeList(List l);				//free occupied memory of list
 int nElems(List l);						//return size of list
-void populateGraph(List l);
+Graph populateGraph(List l);				//this will create the graph
 
 static void readData(List);
 static void printlist(List);
 static int findNode(URL u, char *str);
 
-int main(){
+int main(int argc, char **argv){
 
+	int dFactor, diff, max;
+	if (argc < 4 || argc > 4) {
+		printf("incorrect number of cmd-line arguements\n");
+	} else{
+		dFactor = atoi(argv[1]);
+		diff = atoi(argv[2]);
+		max = atoi(argv[3]);
+	}
+	//create new list
 	List l = newList();
+	//create the graph
+	Graph g = populateGraph();
+	//calculate the page rank
+	//calculatePageRank(dFactor, diff, max);
+
 	return 0;
 }
 
@@ -80,10 +95,10 @@ static void readData(List l){
 		newURLNode(l, input);
 	}
 	//printlist(l);
-	populateGraph(l);
+	//populateGraph(l);
 }
 
-void populateGraph(List l){
+Graph populateGraph(List l){
 	//string to hold dequeued string
 	char *parent;
 	//string to hold urls from file
@@ -115,7 +130,7 @@ void populateGraph(List l){
 		fileInput = (char *) realloc(fileInput, strlen(curr->url));
 		while(fscanf(fp, "%s", fileInput) != EOF){			//search file for "url" only
 			if (strstr(fileInput, "url") != NULL) {				
-				if (isConnected(g, parent, fileInput) == 0){		//isConnected will return true if src & dest isnt connected 
+				if (isConnected(g, parent, fileInput) == 0){//isConnected will return true if src & dest isnt connected 
 					addEdge(g, parent, fileInput);			//add edge between parent and url inside txt file
 					enterQueue(q, fileInput);				//add url into queue
 					//showQueue(q);
@@ -124,7 +139,7 @@ void populateGraph(List l){
 		}
 	}
 	//this will show the graph once it is completed
-	showGraph(g, 1);
+	showGraph(g, 0);
 
 }
 

@@ -10,5 +10,6 @@ void linkNodes(List l, URL u);
 void releaseNode(List l, URL u);
 void disposeList(List l);
 int nElems(List);
+Graph populateGraph(List l);
 
 #endif
