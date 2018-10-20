@@ -8,15 +8,6 @@
 
 #define strEQ(g,t) (strcmp((g),(t)) == 0)
 
-typedef unsigned char Num;
-
-typedef struct GraphRep {
-	int nV;				//store # of vertices
-	int maxV;			//store max number of vertices
-	char **urlVertex;	//String array to store urls
-	Num **edges;		//adjacency matrix
-} GraphRep;
-
 Graph newGraph(int size);								//create empty graph
 void disposeGraph(Graph g);								//free memory occupied by graph
 int addEdge(Graph g, char *src, char *dest);			//add an edge between src and dest
@@ -55,7 +46,7 @@ void disposeGraph(Graph g) {
 	for (i = 0; i < g->nV; i++) {
 		free(g->urlVertex[i]);
 	}
-	for (i = 0; i < g->maxV; i++) {
+	for (i = 0; i < g->nV; i++) {
 		free(g->edges[i]);
 	}
 	free(g->edges);

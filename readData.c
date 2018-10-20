@@ -11,16 +11,7 @@
 #define strEQ(s,t) (strcmp((s), (t)) == 0)
 
 //URLList is essentially a set
-struct urlNode{
-	char *url; 	//hold the string value of URL
-	URL next; 	//pointer to next node
-};
 
-struct URLList {
-	int nitems;	//# of items in list
-	URL head;	//pointer to head
-	URL curr;	//after linking nodes, this will point to the last.
-};
 
 List newList();							//create a list with collection.txt
 void newURLNode(List l, char *);		//create node with given str
@@ -36,20 +27,27 @@ static int findNode(URL u, char *str);
 
 int main(int argc, char **argv){
 
-	int dFactor, diff, max;
+	int max;
+	double d, diff;
 	if (argc < 4 || argc > 4) {
 		printf("incorrect number of cmd-line arguements\n");
 	} else{
-		dFactor = atoi(argv[1]);
-		diff = atoi(argv[2]);
+		d = atof(argv[1]);
+		diff = atof(argv[2]);
 		max = atoi(argv[3]);
 	}
 	//create new list
 	List l = newList();
+	// printlist(l);
 	//create the graph
-	Graph g = populateGraph();
+	// printlist(l);
+	Graph g = populateGraph(l);
 	//calculate the page rank
-	//calculatePageRank(dFactor, diff, max);
+
+	calculatePageRank(g, d, diff, max);
+	disposeList(l);
+	disposeGraph(g);
+
 
 	return 0;
 }
@@ -90,10 +88,11 @@ static void readData(List l){
 	
 	FILE *fp = fopen("collection.txt", "r");
 	assert(fp != NULL);
-	char *input = malloc(8);
+	char *input = malloc(6);
 	while(fscanf(fp, "%s", input) != EOF) {
 		newURLNode(l, input);
 	}
+	fclose(fp);
 	//printlist(l);
 	//populateGraph(l);
 }
@@ -102,45 +101,75 @@ Graph populateGraph(List l){
 	//string to hold dequeued string
 	char *parent;
 	//string to hold urls from file
-	char *fileInput = malloc(1);
+	char *fileInput = malloc(6);
 	//string used to open the file
 	//dont want to change the parent value
-	char *fileSearch = malloc(1);
+	char *fileSearch = malloc(10);
 	Graph g = newGraph(l->nitems);
 	Queue q = newQueue();
 
 	URL curr = l->head;
-	enterQueue(q, curr->url);
+	// enterQueue(q, curr->url);
 	//printf("hello1\n");
+	// while(!emptyQueue(q)) {
+	// 	//if theres more verticies than nodes break
+	// 	if (nVertices(g) >= l->nitems) break;
+	// 	//need to concatenate .txt onto curr->URL
+	// 	parent = strdup(leaveQueue(q));						//dequeue url
+	// 	printf("parent = %s\n", parent);
+	// 	int strLen = strlen(curr->url) + 5;					//find length to store filename
+	// 	fileSearch = (char *) realloc(fileSearch, strLen);	
+	// 	strcpy(fileSearch, parent);							//copy parent url to filesearch
+	// 	strcat(fileSearch, ".txt");							//concatenate .txt to url so url11 -> url11.txt
+	// 	//open file using parent
+	// 	free(parent);
+	// 	FILE *fp = fopen(fileSearch, "r");					//open file using fileSearch value
+	// 	if(fp == NULL){
+	// 		printf("filepath is invalid");
+	// 	}
+	// 	fileInput = (char *) realloc(fileInput, strlen(curr->url));
+	// 	while(fscanf(fp, "%s", fileInput) != EOF){			//search file for "url" only
+	// 		if (strstr(fileInput, "url") != NULL) {				
+	// 			if (isConnected(g, parent, fileInput) == 0){//isConnected will return true if src & dest isnt connected 
+	// 				addEdge(g, parent, fileInput);			//add edge between parent and url inside txt file
+	// 				enterQueue(q, fileInput);				//add url into queue
+	// 				printf("fileinput = %s\n", fileInput);
+	// 				showQueue(q);
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	while(curr != NULL){
+		enterQueue(q, curr->url);
+		curr = curr->next;
+	}
+
 	while(!emptyQueue(q)) {
-		//if theres more verticies than nodes break
-		if (nVertices(g) >= l->nitems) break;
-		//need to concatenate .txt onto curr->URL
-		parent = strdup(leaveQueue(q));						//dequeue url
-		int strLen = strlen(curr->url) + 5;					//find length to store filename
-		fileSearch = (char *) realloc(fileSearch, strLen);	
-		strcpy(fileSearch, parent);							//copy parent url to filesearch
-		strcat(fileSearch, ".txt");							//concatenate .txt to url so url11 -> url11.txt
-		//open file using parent
-		FILE *fp = fopen(fileSearch, "r");					//open file using fileSearch value
-		if(fp == NULL){
-			printf("filepath is invalid");
-			break;
+		parent = strdup(leaveQueue(q));	
+		strcpy(fileSearch, parent);
+		strcat(fileSearch, ".txt");
+		FILE *fp = fopen(fileSearch, "r");
+		if(fp == NULL) {
+			printf("filepath is invalid\n");
 		}
-		fileInput = (char *) realloc(fileInput, strlen(curr->url));
-		while(fscanf(fp, "%s", fileInput) != EOF){			//search file for "url" only
-			if (strstr(fileInput, "url") != NULL) {				
-				if (isConnected(g, parent, fileInput) == 0){//isConnected will return true if src & dest isnt connected 
-					addEdge(g, parent, fileInput);			//add edge between parent and url inside txt file
-					enterQueue(q, fileInput);				//add url into queue
-					//showQueue(q);
+		while(fscanf(fp, "%s", fileInput) != EOF){
+			if (strstr(fileInput, "url") != NULL) {
+				if(isConnected(g, parent, fileInput) == 0) {
+					addEdge(g, parent, fileInput);
 				}
 			}
 		}
-	}
-	//this will show the graph once it is completed
-	showGraph(g, 0);
+	}	
 
+	if (!emptyQueue(q)) disposeQueue(q);
+	free(parent);
+	free(fileSearch);
+	free(fileInput);
+	//this will show the graph once it is completed
+	showGraph(g, 1);
+
+	return g;
 }
 
 int nElems(List l) {
