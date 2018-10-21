@@ -8,17 +8,28 @@
 #include "queue.h"
 #include "pagerank.h"
 
+
+#define TRUE  1
+#define FALSE 0
 //macros
 #define initialPRVal(n,d) (((1 - d)/n) + d)
 
 void calculatePageRank(Graph g, double d, double diffPR, int max);
 
 
+//finding the sum of pagerank PJ at t'th iteration
 static double findSumPR(Graph g, int pageIndex, double **pageRank, int iteration);
+//calculate total Win(pi, pj)
 static double calcWin(Graph g, int u, int v);
+//return count of inLinks
 static int inLinks(Graph g, int index);
+//calculate total Wout(pi, pj)
 static double calcWout(Graph g, int u, int v);
+//count outLinks
 static int outLinks(Graph g, int index);
+static void sortList(Graph g, double **pageRank, int iteration, int size);
+static void printPR(Graph g, double **pageRank, int iteration, int index);
+static int checkSorted(int *array, int size);
 
 
 //calculate pagerank for the node passed in
@@ -42,7 +53,6 @@ void calculatePageRank(Graph g, double d, double diffPR, int max){
 	while(iteration < max && diff >= diffPR) {
 		for(int i = 0; i < size; i++){
 			pageRank[i][iteration + 1] = initialPRVal(size, d) * findSumPR(g, i, pageRank, iteration);
-			// printf("initialPRVal = %f\n", initialPRVal(size, d));
 			printf("for pagerank[%s] pr[%d][%d] = %f, at iteration + 1 pr[%d][%d] = %f\n", g->urlVertex[i], i, iteration, pageRank[i][iteration], i, iteration + 1, pageRank[i][iteration + 1]);
 		}
 		for(int i = 0; i < size; i++){
@@ -50,17 +60,16 @@ void calculatePageRank(Graph g, double d, double diffPR, int max){
 		}
 		iteration++;
 	}
-	printf("iteration = %d\n", iteration);
-	FILE *fp = fopen("pagerankList.txt", "w+");
-	if (fp == NULL) {
-		printf("file path failed\n");
-	}
 
-	for(int i = 0; i < g->nV; i++) {
-		fprintf(fp, "%s, %d, %.7f\n", g->urlVertex[i], outLinks(g, i), pageRank[i][iteration]);
-	}
-
+	//if pageRankList.txt already exists overwrite it with an empty file
+	FILE *fp = fopen("pagerankList.txt", "w");
 	fclose(fp);
+
+	sortList(g, pageRank, iteration, nVertices(g));
+	// for(int i = 0; i < g->nV; i++) {
+	// 	fprintf(fp, "%s, %d, %.7f\n", g->urlVertex[i], outLinks(g, i), pageRank[i][iteration]);
+	// }
+
 }
 
 //find all of the outgoing links to pi, and use them as pj
@@ -108,7 +117,7 @@ static double calcWin(Graph g, int u, int v){
 	// 	vInlink = 0.5;
 	// 	return vInlink;
 	// }
-	//printf("uinlink = %f vinlink = %f Win = %f\n", uInlink, vInlink, uInlink/vInlink);
+
 	return uInlink/vInlink;
 }
 
@@ -135,7 +144,6 @@ static double calcWout(Graph g, int u, int v){
 		uOutlink = 0.5;
 		return uOutlink;
 	}
-	//printf("uOutlink = %f vOutlink = %f Wout = %f\n", uOutlink, vOutlink, uOutlink/vOutlink);
 	return uOutlink/vOutlink;
 }
 
@@ -150,4 +158,47 @@ static int outLinks(Graph g, int index) {
 
 }
 
+//sort of like selection sort
+//find the highest PR then print it out.
+static void sortList(Graph g, double **pageRank, int iteration, int size){
+	int havePrinted[size];
+	for(int i = 0; i < size; i++) havePrinted[i] = FALSE;
+	int sorted = FALSE;
+	int indexFound = 0;
+
+	while(sorted == FALSE){
+		double max = -9999;
+		for(int i = 0; i < size; i++){
+			//find highest pageRank that hasnt been printed.
+			if (pageRank[i][iteration] >= max && havePrinted[i] != TRUE) {
+				max = pageRank[i][iteration];
+				indexFound = i;
+			}
+		}
+		printPR(g, pageRank, iteration, indexFound);
+		havePrinted[indexFound] = TRUE;
+		sorted = checkSorted(havePrinted, size);
+	}
+
+}
+
+//print out the result to pageRankList
+static void printPR(Graph g, double **pageRank, int iteration, int index){
+	//open the file and append the result
+	FILE *fp = fopen("pagerankList.txt", "a");
+	if (fp == NULL) {
+		printf("file path failed\n");
+	}
+	fprintf(fp, "%s, %d, %.7f\n", g->urlVertex[index], outLinks(g, index), pageRank[index][iteration]);
+	fclose(fp);
+
+}
+
+static int checkSorted(int *array, int size) {
+	for(int i = 0; i < size; i++){
+		if(array[i] == FALSE) return FALSE;
+	}
+
+	return TRUE;
+}
 
